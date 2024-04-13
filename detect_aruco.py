@@ -18,6 +18,20 @@ def generate_grid_obj_points(rows, cols, code_size, spacing):
     return np.array(points, dtype=np.float32)
 
 
+def generate_ring_obj_points(radius, num_codes, code_size):
+    circumference = 2 * np.pi * radius
+    code_angle = code_size / circumference * 2 * np.pi
+    points = []
+    for i in range(num_codes):
+        angle0 = 2 * np.pi * i / num_codes
+        angle1 = angle0 + code_angle
+        points.append([[radius * np.cos(angle0), radius * np.sin(angle0), 0],
+                       [radius * np.cos(angle1), radius * np.sin(angle1), 0],
+                       [radius * np.cos(angle1), radius * np.sin(angle1), code_size],
+                       [radius * np.cos(angle0), radius * np.sin(angle0), code_size]])
+    return np.array(points, dtype=np.float32)
+
+
 def main():
     cap = cv2.VideoCapture(1)
     dictionary = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
@@ -30,7 +44,8 @@ def main():
 
     dist_coeffs = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
 
-    all_obj_points = generate_grid_obj_points(4, 6, 10, 4)
+    circumference = 225
+    all_obj_points = generate_ring_obj_points(circumference / (2 * np.pi), 18, 10)
 
     while True:
         ret, frame = cap.read()
@@ -48,7 +63,7 @@ def main():
                 if id not in ids:
                     continue
                 i = np.where(ids == id)[0][0]
-                obj_points.extend(all_obj_points[id * 4:(id + 1) * 4])
+                obj_points.extend(all_obj_points[id])
                 image_points.extend(corners[i][0])
             obj_points = np.array(obj_points, dtype=np.float32)
             image_points = np.array(image_points, dtype=np.float32)
