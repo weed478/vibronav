@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 import albumentations as A
 import os
 import shutil
-import dask.bag as db
-from dask.diagnostics import ProgressBar
 import yaml
 from tqdm import tqdm
 from PIL import Image
@@ -67,24 +65,32 @@ def save_yolo_dataset(path, **splits):
         def save_image(i):
             image, target = data[i]
             # konwersja obrazu do PIL
-            image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+            image = Image.fromarray(image)
 
             image_path = os.path.join(path, split, 'images', f'{i}.jpg')
-            image.save(image_path)
 
             with open(os.path.join(path, split, 'labels', f'{i}.txt'), 'w') as f:
-                for t in target:
-                    
-                    # spłaszczona lista keypoints
-                    bbox = []
-                    for tuple in target['keypoints']:
-                        bbox.extend(tuple)
+                p0x, p0y = target['keypoints'][0]
+                p1x, p1y = target['keypoints'][1]
 
-                    x_center = (bbox[0] + bbox[2]) / (2 * image.width)
-                    y_center = (bbox[1] + bbox[3]) / (2 * image.height)
-                    width = (bbox[2] - bbox[0]) / image.width
-                    height = (bbox[3] - bbox[1]) / image.height
-                    f.write(f'0 {x_center} {y_center} {width} {height} {bbox[0]} {bbox[1]} 2 {bbox[2]} {bbox[3]} 2\n')
+                p0x /= image.width
+                p0y /= image.height
+                p1x /= image.width
+                p1y /= image.height
+
+                if p0x < 0 or p0y < 0 or p1x < 0 or p1y < 0 or p0x > 1 or p0y > 1 or p1x > 1 or p1y > 1:
+                    return
+
+                image.save(image_path)
+
+                x_center = (p0x + p1x) / 2
+                y_center = (p0y + p1y) / 2
+
+                width = abs(p0x - p1x)
+                height = abs(p0y - p1y)
+
+                # f.write(f'0 {x_center} {y_center} {width} {height} {p0x} {p0y} 2 {p1x} {p1y} 2\n')
+                f.write(f'0 {x_center} {y_center} {width} {height}\n')
 
         # Zapisywanie danych partiami
         batch_size = 1000
@@ -101,13 +107,13 @@ def save_yolo_dataset(path, **splits):
         yaml.dump({
             'names': ['needle'],
             'nc': 1,
-            **{split: os.path.join(path, split) for split in splits},
+            **{split: split for split in splits},
         }, f)
 
 
 if __name__ == '__main__':
 
-    # odczytanie danych z formatu COCO 
+    # odczytanie danych z formatu COCO
     train_dataset = CocoDetection(
         root='needle-student-keypoint-2/train',
         annFile='needle-student-keypoint-2/train/_annotations.coco.json',
@@ -122,7 +128,7 @@ if __name__ == '__main__':
         target_transform=target_transform,
     )
 
-    # augmentacja danych treningowych 
+    # augmentacja danych treningowych
     aug_dataset = []
     for image, target in train_dataset:
         for _ in range(10):
