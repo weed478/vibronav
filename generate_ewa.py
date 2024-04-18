@@ -69,45 +69,40 @@ def save_yolo_dataset(path, **splits):
 
             image_path = os.path.join(path, split, 'images', f'{i}.jpg')
 
+            p0x, p0y = target['keypoints'][0]
+            p1x, p1y = target['keypoints'][1]
+
+            p0x /= image.width
+            p0y /= image.height
+            p1x /= image.width
+            p1y /= image.height
+
+            if p0x < 0 or p0y < 0 or p1x < 0 or p1y < 0 or p0x > 1 or p0y > 1 or p1x > 1 or p1y > 1:
+                return
+
+            print('Saving', image_path)
+            image.save(image_path)
+
+            x_center = (p0x + p1x) / 2
+            y_center = (p0y + p1y) / 2
+
+            width = abs(p0x - p1x) + 0.01
+            height = abs(p0y - p1y) + 0.01
+
             with open(os.path.join(path, split, 'labels', f'{i}.txt'), 'w') as f:
-                p0x, p0y = target['keypoints'][0]
-                p1x, p1y = target['keypoints'][1]
+                f.write(f'0 {x_center} {y_center} {width} {height} {p0x} {p0y} {p1x} {p1y}\n')
+                # f.write(f'0 {x_center} {y_center} {width} {height}\n')
 
-                p0x /= image.width
-                p0y /= image.height
-                p1x /= image.width
-                p1y /= image.height
-
-                if p0x < 0 or p0y < 0 or p1x < 0 or p1y < 0 or p0x > 1 or p0y > 1 or p1x > 1 or p1y > 1:
-                    return
-
-                image.save(image_path)
-
-                x_center = (p0x + p1x) / 2
-                y_center = (p0y + p1y) / 2
-
-                width = abs(p0x - p1x)
-                height = abs(p0y - p1y)
-
-                # f.write(f'0 {x_center} {y_center} {width} {height} {p0x} {p0y} 2 {p1x} {p1y} 2\n')
-                f.write(f'0 {x_center} {y_center} {width} {height}\n')
-
-        # Zapisywanie danych partiami
-        batch_size = 1000
-        num_batches = len(data) // batch_size + 1
-        for batch_idx in tqdm(range(num_batches), desc=f'Saving {split} set'):
-            start_idx = batch_idx * batch_size
-            end_idx = min((batch_idx + 1) * batch_size, len(data))
-            batch_data = data[start_idx:end_idx]
-
-            for idx in range(len(batch_data)):
-                save_image(start_idx + idx)
+        for i in tqdm(range(len(data)), desc=f'Saving {split} set'):
+                save_image(i)
 
     with open(os.path.join(path, 'data.yaml'), 'w') as f:
         yaml.dump({
             'names': ['needle'],
             'nc': 1,
-            **{split: split for split in splits},
+            'kpt_shape': [2, 2],
+            'flip_idx': [0, 1],
+            **{split: os.path.join(split) for split in splits},
         }, f)
 
 
@@ -122,8 +117,8 @@ if __name__ == '__main__':
     )
 
     test_dataset = CocoDetection(
-        root='needle-student-keypoint-2/train',
-        annFile='needle-student-keypoint-2/train/_annotations.coco.json',
+        root='needle-student-keypoint-2/valid',
+        annFile='needle-student-keypoint-2/valid/_annotations.coco.json',
         transform=transform,
         target_transform=target_transform,
     )
