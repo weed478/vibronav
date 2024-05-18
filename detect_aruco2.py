@@ -2,14 +2,14 @@ import cv2
 import cv2.aruco as aruco
 import numpy as np
 import argparse
-
+import sys
 
 def generate_plus_obj_points(code_size, plate_height, spacing):
     points = []
 
     # positions of top-lef corners of markers in shape "+"
     positions_topleft = [
-        (0, 0),                         # central marker
+        (0, 0),                           # central marker
         ((code_size + spacing*2), 0),     # right marker
         (0, (code_size + spacing*2)),     # top marker
         (-(code_size + spacing*2), 0),    # left marker
