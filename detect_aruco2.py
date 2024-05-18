@@ -2,18 +2,17 @@ import cv2
 import cv2.aruco as aruco
 import numpy as np
 import argparse
-import sys
 
 def generate_plus_obj_points(code_size, plate_height, spacing):
     points = []
 
-    # positions of top-lef corners of markers in shape "+"
-    positions_topleft = [
-        (0, 0),                           # central marker
-        ((code_size + spacing*2), 0),     # right marker
-        (0, (code_size + spacing*2)),     # top marker
-        (-(code_size + spacing*2), 0),    # left marker
-        (0, -(code_size + spacing*2))     # bottom marker
+    # positions of centers of markers in shape "+"
+    positions = [
+        (0, 0),                             # central marker
+        ((code_size + spacing * 2), 0),     # right marker
+        (0, (code_size + spacing * 2)),     # top marker
+        (-(code_size + spacing * 2), 0),    # left marker
+        (0, -(code_size + spacing * 2))     # bottom marker
     ]
 
     # heights of corners on a plate
@@ -26,14 +25,15 @@ def generate_plus_obj_points(code_size, plate_height, spacing):
         (h, h, 0, 0)
     ]
 
-    # generate corner coordinates for each marker
-    for i, (x, y) in enumerate(positions_topleft):
+    # generate corner coordinates relative the marker centers
+    half_code_size = code_size / 2
+    for i, (x, y) in enumerate(positions):
         z0, z1, z2, z3 = heights[i]
 
-        points.append([[x, y, z0],
-                       [x + code_size, y, z1],
-                       [x + code_size, y - code_size, z2],
-                       [x, y - code_size, z3]])
+        points.append([[x - half_code_size, y + half_code_size, z0],
+                       [x + half_code_size, y + half_code_size, z1],
+                       [x + half_code_size, y - half_code_size, z2],
+                       [x - half_code_size, y - half_code_size, z3]])
 
     return np.array(points, dtype=np.float32)
 
