@@ -12,10 +12,10 @@ def generate_plus_obj_points(code_size: int, plate_height: float, spacing: float
     b = np.sqrt(code_size**2 - plate_height**2)   # code side length seen from above
     coef = b / code_size
 
-    edge_dist = half_code_size + spacing + b + coef * (2 * spacing)        # distance from center of the central marker to plate edge
     base_dist = 0
     if distance:
-        base_dist = edge_dist + distance                                   # distance from plate edge to needle base
+        edge_dist = half_code_size + spacing + b + coef * (2 * spacing)        # distance from center of the central marker to plate edge
+        base_dist = edge_dist + distance                                       # distance from plate edge to needle base
 
     # positions of centers of markers in shape "+"
     positions = [
