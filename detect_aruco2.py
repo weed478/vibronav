@@ -71,7 +71,7 @@ def get_marker_corners_heights(board_height: float) -> list:
     Get the heights of marker corners relative to the board.
 
     Parameters:
-    board_height (float): The height of the pertrusion of board.
+    board_height (float): The height of the protrusion of board.
 
     Returns:
     list: A list containing tuples representing the heights of marker corners.
@@ -127,7 +127,7 @@ def generate_plus_obj_points(code_side_length: int, board_height: float, spacing
 
     Parameters:
     code_side_length (int): The side length of the code marker.
-    board_height (float): The height of the board pertrusion on which markers are placed.
+    board_height (float): The height of the board protrusion on which markers are placed.
     spacing (float): The spacing between the ArUco markers.
     distance (float): The distance from the board edge to the needle base.
 
@@ -186,7 +186,7 @@ def main(code_side_length, board_height, spacing, distance, needle_length):
 
     Args:
         code_side_length (int): The length of the side of the marker code.
-        board_height (float): The height of the board pertrusion.
+        board_height (float): The height of the board protrusion.
         spacing (float): The spacing between markers.
         distance (float): The distance from the board to the needle.
         needle_length (float): The length of the needle.
@@ -252,7 +252,7 @@ def main(code_side_length, board_height, spacing, distance, needle_length):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Arguments to main')
     parser.add_argument('-a', '--code_side_length', type=int, help='Marker side length')
-    parser.add_argument('-b', '--board_height', type=float, help='Board pertrusion height')
+    parser.add_argument('-b', '--board_height', type=float, help='Board protrusion height')
     parser.add_argument('-s', '--spacing', type=float, help='Spacing between aruco markers')
     parser.add_argument('-d', '--distance', type=float, help='Board distance from the needle')
     parser.add_argument('-l', '--needle_length', type=float, help='Needle length')
