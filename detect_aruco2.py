@@ -180,7 +180,7 @@ def generate_plus_obj_points(code_side_length: int, board_height: float, spacing
     return np.array(points, dtype=np.float32)
 
 
-def main(code_side_length, board_height, spacing, distance, needle_length):
+def main(camera, code_side_length, board_height, spacing, distance, needle_length):
     """
     Execute the main functionality of the program.
 
@@ -199,7 +199,7 @@ def main(code_side_length, board_height, spacing, distance, needle_length):
         - It then calculates the position and orientation of the needle relative to the markers.
         - The calculated needle position and orientation are visualized on the video feed.
     """
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(camera)
     dictionary = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
     detector_params = aruco.DetectorParameters()
     detector = aruco.ArucoDetector(dictionary, detector_params)
@@ -224,7 +224,7 @@ def main(code_side_length, board_height, spacing, distance, needle_length):
 
             obj_points = []
             image_points = []
-            for id in range(len(ids)):
+            for id in range(5):
                 if id not in ids:
                     continue
                 i = np.where(ids == id)[0][0]
@@ -251,10 +251,11 @@ def main(code_side_length, board_height, spacing, distance, needle_length):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Arguments to main')
-    parser.add_argument('-a', '--code_side_length', type=int, help='Marker side length')
-    parser.add_argument('-b', '--board_height', type=float, help='Board protrusion height')
-    parser.add_argument('-s', '--spacing', type=float, help='Spacing between aruco markers')
-    parser.add_argument('-d', '--distance', type=float, help='Board distance from the needle')
-    parser.add_argument('-l', '--needle_length', type=float, help='Needle length')
+    parser.add_argument('-c', '--camera', type=int, help='Camera index', default=0)
+    parser.add_argument('-a', '--code_side_length', type=int, help='Marker side length', default=10)
+    parser.add_argument('-b', '--board_height', type=float, help='Board protrusion height', default=5)
+    parser.add_argument('-s', '--spacing', type=float, help='Spacing between aruco markers', default=1)
+    parser.add_argument('-d', '--distance', type=float, help='Board distance from the needle', default=0)
+    parser.add_argument('-l', '--needle_length', type=float, help='Needle length', default=50)
     args = parser.parse_args()
-    main(args.code_side_length, args.board_height, args.spacing, args.distance, args.needle_length)
+    main(args.camera, args.code_side_length, args.board_height, args.spacing, args.distance, args.needle_length)
